@@ -1,0 +1,37 @@
+-- OPTIONAL: Scheduled sync (every 15 minutes)
+--
+-- Recommended (Supabase hosted): use Supabase Scheduled Edge Functions.
+--
+-- Repo support added:
+-- - Edge Function `sync-all` (supabase/functions/sync-all) which iterates active integrations.
+-- - Both `sync-all` and `sync-data` require `x-cron-secret` for automated calls.
+--
+-- Setup (dashboard/CLI):
+-- 1) Set a secret for the functions: CRON_SECRET
+-- 2) Create a schedule for `sync-all`: every 15 minutes
+-- 3) Ensure the scheduler includes header: x-cron-secret: <CRON_SECRET>
+--
+-- Alternative (self-hosted Postgres only): `pg_cron` + `pg_net` can call the function HTTP endpoint.
+-- This is intentionally not enabled by default because hosted Supabase does not universally support pg_cron.
+--
+-- Example (template):
+--
+-- CREATE EXTENSION IF NOT EXISTS pg_cron;
+-- CREATE EXTENSION IF NOT EXISTS pg_net;
+--
+-- -- Schedule every 15 minutes
+-- SELECT cron.schedule(
+--   'sync-all-integrations',
+--   '*/15 * * * *',
+--   $$
+--   SELECT
+--     net.http_post(
+--       url := 'https://<PROJECT_REF>.supabase.co/functions/v1/sync-all',
+--       headers := jsonb_build_object(
+--         'Content-Type', 'application/json',
+--         'x-cron-secret', '<CRON_SECRET>'
+--       ),
+--       body := '{}'::jsonb
+--     );
+--   $$
+-- );

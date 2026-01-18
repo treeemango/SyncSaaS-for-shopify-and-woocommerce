@@ -1,0 +1,16 @@
+# Supabase local project config
+# https://supabase.com/docs/guides/cli/local-development
+
+[functions.shopify-auth]
+verify_jwt = false
+
+[functions.woo-auth]
+verify_jwt = false
+
+# Uses its own auth checks (user JWT or internal cron secret)
+[functions.sync-data]
+verify_jwt = false
+
+# Scheduled runner (protected by internal cron secret)
+[functions.sync-all]
+verify_jwt = false
