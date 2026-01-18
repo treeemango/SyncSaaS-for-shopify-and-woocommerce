@@ -104,15 +104,13 @@ export const Dashboard: React.FC = () => {
         } finally {
             setSyncing(false);
         }
-    };
-
-    // Auto-sync detector
+    };    // Auto-sync detector
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
-        if (params.get('success') === 'true' && integrations.length > 0 && orders.length === 0 && !syncing) {
+        if (params.get('success') === 'true' && integrations.length > 0 && !syncing) {
             handleSyncAll(integrations);
         }
-    }, [integrations, orders]);
+    }, [integrations]);
 
     // Aggregate sales data by date across all stores
     const getChartData = () => {
