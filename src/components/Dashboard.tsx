@@ -83,11 +83,15 @@ export const Dashboard: React.FC = () => {
         }
     };
 
-    const handleSyncAll = async () => {
-        if (syncing) return;
+    const handleSyncAll = async (targetIntegrations?: any[]) => {
+        const intsToSync = targetIntegrations || integrations;
+        if (syncing || intsToSync.length === 0) return;
+
         setSyncing(true);
         try {
-            const activeInts = integrations.filter(i => i.status === 'active');
+            const activeInts = intsToSync.filter(i => i.status === 'active');
+            if (activeInts.length === 0) return;
+
             // Parallel sync: trigger all at once
             await Promise.all(activeInts.map(integration =>
                 supabase.functions.invoke('sync-data', {
@@ -97,11 +101,18 @@ export const Dashboard: React.FC = () => {
             await fetchData();
         } catch (error) {
             console.error('Sync failed:', error);
-            alert('Manual sync failed. Please try again.');
         } finally {
             setSyncing(false);
         }
     };
+
+    // Auto-sync detector
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('success') === 'true' && integrations.length > 0 && orders.length === 0 && !syncing) {
+            handleSyncAll(integrations);
+        }
+    }, [integrations, orders]);
 
     // Aggregate sales data by date across all stores
     const getChartData = () => {
@@ -140,12 +151,12 @@ export const Dashboard: React.FC = () => {
                 </div>
                 <div className="flex gap-3">
                     <button
-                        onClick={handleSyncAll}
+                        onClick={() => handleSyncAll()}
                         disabled={syncing}
-                        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-2xl transition-all shadow-lg shadow-blue-500/20 active:scale-95 disabled:opacity-50"
+                        className={`flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-2xl transition-all shadow-lg shadow-blue-500/20 active:scale-95 disabled:opacity-50 ${syncing ? 'ring-2 ring-blue-400 ring-offset-2 ring-offset-zinc-950 animate-pulse' : ''}`}
                     >
                         <RefreshCw className={`w-5 h-5 ${syncing ? 'animate-spin' : ''}`} />
-                        <span>{syncing ? 'Syncing...' : 'Force Refresh'}</span>
+                        <span>{syncing ? 'Auto-Syncing Data...' : 'Force Refresh'}</span>
                     </button>
                 </div>
             </div>
