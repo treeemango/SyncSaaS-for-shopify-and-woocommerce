@@ -90,9 +90,30 @@ function App() {
       </div>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 overflow-auto pb-20 lg:pb-0">
         {activeTab === 'dashboard' ? <Dashboard /> : <IntegrationManager />}
       </main>
+
+      {/* Mobile Bottom Navigation */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-zinc-900/95 backdrop-blur-xl border-t border-zinc-800 p-2 flex gap-2 lg:hidden z-50">
+        <button
+          onClick={() => setActiveTab('dashboard')}
+          className={`flex-1 flex flex-col items-center gap-1 py-3 rounded-xl transition-all ${activeTab === 'dashboard' ? 'bg-blue-600/10 text-blue-400' : 'text-zinc-500'
+            }`}
+        >
+          <LayoutDashboard className="w-5 h-5" />
+          <span className="text-xs font-medium">Dashboard</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('connect')}
+          className={`flex-1 flex flex-col items-center gap-1 py-3 rounded-xl transition-all ${activeTab === 'connect' ? 'bg-blue-600/10 text-blue-400' : 'text-zinc-500'
+            }`}
+        >
+          <Cable className="w-5 h-5" />
+          <span className="text-xs font-medium">Connect</span>
+        </button>
+      </nav>
     </div>
   )
 }
