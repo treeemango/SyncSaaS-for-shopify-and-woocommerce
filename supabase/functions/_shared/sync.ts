@@ -86,15 +86,34 @@ export async function syncIntegration(integration: IntegrationRow): Promise<Sync
 
     if (!integration.refresh_token) throw new Error('Missing WooCommerce consumer_secret (refresh_token)')
 
-    const after = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString()
+    let baseUrl = integration.store_url
+    try {
+      const parsed = new URL(integration.store_url)
+      baseUrl = `${parsed.origin}${parsed.pathname}`.replace(/\/+$/, '')
+    } catch {
+      baseUrl = integration.store_url.replace(/\/+$/, '')
+    }
+
+    const lastSync = (integration as any).last_sync_at
+    const fallbackWindowDays = 180
+    const after = lastSync
+      ? new Date(lastSync).toISOString()
+      : new Date(Date.now() - fallbackWindowDays * 24 * 60 * 60 * 1000).toISOString()
     const auth = btoa(`${integration.access_token}:${integration.refresh_token}`)
-    const apiUrl = `${integration.store_url}/wp-json/wc/v3/orders?after=${after}`
+    const apiPath = `/wp-json/wc/v3/orders?after=${encodeURIComponent(after)}&per_page=100&status=any`
+    const apiUrl = `${baseUrl}${apiPath}`
 
-    console.log('API URL:', apiUrl);
+    console.log('API URL:', `${baseUrl}/wp-json/wc/v3/orders?...`);
 
-    const response = await fetch(apiUrl, {
+    let response = await fetch(apiUrl, {
       headers: { Authorization: `Basic ${auth}` },
     })
+
+    if (response.status === 401 || response.status === 403) {
+      // Some hosts block Authorization headers; retry with query params.
+      const apiUrlWithKeys = `${apiUrl}&consumer_key=${encodeURIComponent(integration.access_token)}&consumer_secret=${encodeURIComponent(integration.refresh_token)}`
+      response = await fetch(apiUrlWithKeys)
+    }
 
     console.log('Response status:', response.status);
 
@@ -130,12 +149,12 @@ export async function syncIntegration(integration: IntegrationRow): Promise<Sync
       .upsert(orders, { onConflict: 'integration_id, external_id' })
 
     if (upsertError) throw upsertError
-
-    await supabase
-      .from('integrations')
-      .update({ last_sync_at: new Date().toISOString() })
-      .eq('id', integration.id)
   }
+
+  await supabase
+    .from('integrations')
+    .update({ last_sync_at: new Date().toISOString() })
+    .eq('id', integration.id)
 
   return { integration_id: integration.id, count: orders.length }
 }
