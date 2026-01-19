@@ -69,6 +69,14 @@ export const IntegrationManager: React.FC = () => {
                     throw new Error('Please enter your Shopify domain like mystore.myshopify.com (not an admin URL).')
                 }
                 normalizedStoreUrl = host
+            } else {
+                // WooCommerce: ensure https:// protocol
+                normalizedStoreUrl = storeUrl.trim()
+                if (!normalizedStoreUrl.startsWith('http://') && !normalizedStoreUrl.startsWith('https://')) {
+                    normalizedStoreUrl = `https://${normalizedStoreUrl}`
+                }
+                // Remove trailing slash
+                normalizedStoreUrl = normalizedStoreUrl.replace(/\/+$/, '')
             }
 
             // Call the initiation function which returns the redirect URL
