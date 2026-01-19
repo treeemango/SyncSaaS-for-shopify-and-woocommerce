@@ -12,6 +12,19 @@ function App() {
   const [authLoading, setAuthLoading] = useState(true)
   const [showAuth, setShowAuth] = useState(false)
 
+  const handleSignOut = async () => {
+    try {
+      const { error } = await supabase.auth.signOut()
+      if (error) {
+        console.error('Sign out error:', error)
+        alert('Failed to sign out. Please try again.')
+      }
+    } catch (err) {
+      console.error('Unexpected sign out error:', err)
+      alert('Failed to sign out. Please try again.')
+    }
+  }
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session)
@@ -55,7 +68,7 @@ function App() {
           <span className="font-bold text-lg tracking-tight">SyncSaaS</span>
         </div>
         <button
-          onClick={() => supabase.auth.signOut()}
+          onClick={handleSignOut}
           className="flex items-center gap-2 text-sm text-zinc-400 hover:text-white bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg px-3 py-2 transition-all"
         >
           <LogOut className="w-4 h-4" />
@@ -96,7 +109,7 @@ function App() {
             <p className="text-sm font-medium truncate">{session.user.email}</p>
           </div>
           <button
-            onClick={() => supabase.auth.signOut()}
+            onClick={handleSignOut}
             className="w-full text-sm bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg py-2"
           >
             Sign out
