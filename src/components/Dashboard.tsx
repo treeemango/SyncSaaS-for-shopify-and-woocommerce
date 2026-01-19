@@ -234,10 +234,10 @@ export const Dashboard: React.FC = () => {
                             <p className="text-xs text-zinc-500 mt-1">Revenue performance over recent timeline.</p>
                         </div>
                     </div>
-                    <div className="h-80 w-full min-h-[320px]">
+                    <div className="h-64 sm:h-80 w-full">
                         {chartData.length > 0 ? (
-                            <ResponsiveContainer width="100%" height="100%" minHeight={300}>
-                                <LineChart data={chartData}>
+                            <ResponsiveContainer width="100%" height="100%">
+                                <LineChart data={chartData} margin={{ top: 5, right: 5, left: -10, bottom: 5 }}>
                                     <defs>
                                         <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
                                             <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
@@ -245,8 +245,8 @@ export const Dashboard: React.FC = () => {
                                         </linearGradient>
                                     </defs>
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#1e1e21" />
-                                    <XAxis dataKey="name" stroke="#52525b" fontSize={11} tickLine={false} axisLine={false} />
-                                    <YAxis stroke="#52525b" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => `$${v}`} />
+                                    <XAxis dataKey="name" stroke="#52525b" fontSize={10} tickLine={false} axisLine={false} interval="preserveStartEnd" />
+                                    <YAxis stroke="#52525b" fontSize={10} tickLine={false} axisLine={false} tickFormatter={(v) => `$${v}`} width={45} />
                                     <Tooltip
                                         contentStyle={{ backgroundColor: '#09090b', border: '1px solid #27272a', borderRadius: '16px', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.5)' }}
                                         cursor={{ stroke: '#3b82f6', strokeWidth: 2 }}
@@ -255,9 +255,9 @@ export const Dashboard: React.FC = () => {
                                         type="monotone"
                                         dataKey="sales"
                                         stroke="#3b82f6"
-                                        strokeWidth={4}
-                                        dot={{ r: 4, fill: '#3b82f6', strokeWidth: 2, stroke: '#09090b' }}
-                                        activeDot={{ r: 6, fill: '#fff', strokeWidth: 0 }}
+                                        strokeWidth={3}
+                                        dot={{ r: 3, fill: '#3b82f6', strokeWidth: 2, stroke: '#09090b' }}
+                                        activeDot={{ r: 5, fill: '#fff', strokeWidth: 0 }}
                                         animationDuration={1500}
                                     />
                                 </LineChart>

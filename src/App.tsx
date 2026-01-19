@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Dashboard } from './components/Dashboard'
 import { IntegrationManager } from './components/IntegrationManager'
-import { LayoutDashboard, Cable } from 'lucide-react'
+import { LayoutDashboard, Cable, LogOut } from 'lucide-react'
 import { supabase } from './lib/supabase'
 import { Auth } from './components/Auth'
 import { Landing } from './components/Landing'
@@ -47,7 +47,22 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#09090b] text-zinc-100 flex">
+    <div className="min-h-screen bg-[#09090b] text-zinc-100 flex flex-col lg:flex-row">
+      {/* Mobile Header */}
+      <header className="flex items-center justify-between p-4 border-b border-zinc-800 lg:hidden">
+        <div className="flex items-center gap-3">
+          <img src="/favicon.png" alt="SyncSaaS Logo" className="w-8 h-8 rounded-lg" />
+          <span className="font-bold text-lg tracking-tight">SyncSaaS</span>
+        </div>
+        <button
+          onClick={() => supabase.auth.signOut()}
+          className="flex items-center gap-2 text-sm text-zinc-400 hover:text-white bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg px-3 py-2 transition-all"
+        >
+          <LogOut className="w-4 h-4" />
+          Sign out
+        </button>
+      </header>
+
       {/* Sidebar */}
       <div className="w-64 border-r border-zinc-800 p-6 hidden lg:flex lg:flex-col lg:gap-8">
         <div className="flex items-center gap-3 px-2">
