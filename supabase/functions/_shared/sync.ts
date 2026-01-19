@@ -81,17 +81,32 @@ export async function syncIntegration(integration: IntegrationRow): Promise<Sync
       })),
     );
   } else if (integration.platform === 'woocommerce') {
+    console.log('--- WOOCOMMERCE SYNC START ---');
+    console.log('Store URL:', integration.store_url);
+
     if (!integration.refresh_token) throw new Error('Missing WooCommerce consumer_secret (refresh_token)')
 
     const after = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString()
     const auth = btoa(`${integration.access_token}:${integration.refresh_token}`)
-    const response = await fetch(`${integration.store_url}/wp-json/wc/v3/orders?after=${after}`, {
+    const apiUrl = `${integration.store_url}/wp-json/wc/v3/orders?after=${after}`
+
+    console.log('API URL:', apiUrl);
+
+    const response = await fetch(apiUrl, {
       headers: { Authorization: `Basic ${auth}` },
     })
 
-    if (!response.ok) throw new Error(`WooCommerce API error: ${await response.text()}`)
+    console.log('Response status:', response.status);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('WooCommerce API error response:', errorText);
+      throw new Error(`WooCommerce API error: ${errorText}`)
+    }
 
     const data = await response.json()
+    console.log('WooCommerce orders fetched:', data.length);
+
     orders.push(
       ...data.map((o: any) => ({
         integration_id: integration.id,
@@ -99,13 +114,14 @@ export async function syncIntegration(integration: IntegrationRow): Promise<Sync
         total_price: parseFloat(o.total),
         currency: o.currency,
         customer_name: o.billing
-          ? `${o.billing.first_name || ''} ${o.billing.last_name || ''}`.trim()
-          : 'Unknown',
+          ? `${o.billing.first_name || ''} ${o.billing.last_name || ''}`.trim() || 'Guest'
+          : 'Guest',
         status: o.status,
         ordered_at: o.date_created,
         raw_data: o,
       })),
     )
+    console.log('--- WOOCOMMERCE SYNC END ---');
   }
 
   if (orders.length > 0) {
