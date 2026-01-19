@@ -45,6 +45,9 @@ export async function syncIntegration(integration: IntegrationRow): Promise<Sync
               }
               displayFinancialStatus
               name
+              customer {
+                displayName
+              }
             }
           }
         }
@@ -71,7 +74,7 @@ export async function syncIntegration(integration: IntegrationRow): Promise<Sync
         external_id: o.id.split('/').pop(), // Extract ID from gid://shopify/Order/123
         total_price: parseFloat(o.totalPriceSet.shopMoney.amount),
         currency: o.totalPriceSet.shopMoney.currencyCode,
-        customer_name: 'Unknown',
+        customer_name: o.customer?.displayName || 'Guest',
         status: o.displayFinancialStatus.toLowerCase(),
         ordered_at: o.createdAt,
         raw_data: o,
