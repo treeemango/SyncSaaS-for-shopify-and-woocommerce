@@ -12,16 +12,37 @@ function App() {
   const [authLoading, setAuthLoading] = useState(true)
   const [showAuth, setShowAuth] = useState(false)
 
+  const clearStoredSession = () => {
+    try {
+      const authAny = supabase.auth as unknown as { storageKey?: string }
+      if (authAny?.storageKey) {
+        localStorage.removeItem(authAny.storageKey)
+        return
+      }
+
+      Object.keys(localStorage)
+        .filter((key) => key.startsWith('sb-') && key.endsWith('-auth-token'))
+        .forEach((key) => localStorage.removeItem(key))
+    } catch {
+      // Ignore storage access errors (private mode, blocked storage, etc.)
+    }
+  }
+
   const handleSignOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut()
-      if (error) {
-        console.error('Sign out error:', error)
-        alert('Failed to sign out. Please try again.')
+      const { data: { session: currentSession } } = await supabase.auth.getSession()
+      if (currentSession) {
+        const { error } = await supabase.auth.signOut({ scope: 'local' })
+        if (error && !error.message?.includes('session') && error.name !== 'AuthSessionMissingError') {
+          console.error('Sign out error:', error)
+        }
       }
     } catch (err) {
       console.error('Unexpected sign out error:', err)
-      alert('Failed to sign out. Please try again.')
+    } finally {
+      clearStoredSession()
+      setSession(null)
+      setShowAuth(false)
     }
   }
 
